@@ -53,3 +53,12 @@ V1__init.sql
 V2__add_columns.sql
 V3__new_feature.sql
 ```
+
+Show applied and pending migrations:
+```
+mvn flyway:info
+```
+Apply migrations:
+```
+mvn flyway:migrate
+```
