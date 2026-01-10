@@ -32,6 +32,9 @@ This will:
 ## Run in DEV (H2)
 ```
 mvn clean spring-boot:run
+```
+or
+```
 mvn clean spring-boot:run -D"spring-boot.run.profiles"=dev
 ```
 Open H2 console:
