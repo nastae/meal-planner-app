@@ -1,0 +1,58 @@
+TODO:
++1. padaryti schema is turimu klasiu
++2. Kodel mano RecipeClass sprendimas yra geresnis ir naudingesnis uz kitus, kodel tai galesiu perpanaudoti dinner su lunch receptus.
+Atsakymas:
+RecipeClass leidžia:
+nerašyti to paties patiekalo 10 kartų
+keisti porcijas be kopijavimo
+automatiškai planuoti savaitę
+Tai yra būtent kaip veikia realus maisto planavimas
+
+Plačiau:
+1️⃣ RecipeClass = kas tai per patiekalas
+Tai yra:
+pavadinimas
+instrukcijos
+idėja, kas tai per maistas
+Pvz:
+„Sumuštinis su kumpiu“
+Tai niekada nesikeičia.
+
+2️⃣ Recipe = konkreti porcija konkrečiam valgymui
+Tai yra:
+ar tai pusryčiai, pietūs ar vakarienė
+kiek gramų
+kiek kcal
+Pvz:
+MealType	Porcija
+BREAKFAST	mažas sumuštinis
+LUNCH	didesnis
+DINNER	vidutinis
+Visi jie rodo į tą patį RecipeClass = „Sumuštinis su kumpiu“.
+
+🔥 Kodėl tai labai galinga
+Jeigu neturėtum RecipeClass, turėtum:
+„Sumuštinis pusryčiams“
+„Sumuštinis pietums“
+„Sumuštinis vakarienei“
+Tai būtų 3 skirtingi receptai, nors realiai tai tas pats patiekalas.
+Tai reiškia:
+dubliuoti instrukcijas
+dubliuoti ingredientų sąrašus
+chaosą
+Su RecipeClass:
+Vienas patiekalas → daug porcijų → daug skirtingų valgių
+
+🍽 Kodėl gali naudoti tą patį patiekalą pietums ir vakarienei?
+Nes:
+RecipeClass = „Ką valgai“
+Recipe = „Kiek to valgai ir kada“
+Pietums gali būti 700 kcal, vakarienei 300 kcal –
+bet abu yra tas pats patiekalas.
+
+🧠 Trumpai
+RecipeClass leidžia:
+nerašyti to paties patiekalo 10 kartų
+keisti porcijas be kopijavimo
+automatiškai planuoti savaitę
+Tai yra būtent kaip veikia realus maisto planavimas 🍽️💡

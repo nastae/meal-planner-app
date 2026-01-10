@@ -1,0 +1,2 @@
+1. Rest operacijos (CRUD)
+2. React js front-end
