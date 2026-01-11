@@ -1,0 +1,113 @@
+{
+	"info": {
+		"_postman_id": "7f97320b-549f-4863-806e-cc6e57fdd721",
+		"name": "Meal Planner API",
+		"description": "Meal Planner API to manage ingredients, recipes, and meals, calculate nutrition, and weekly menus.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5902954",
+		"_collection_link": "https://crimson-rocket-2580.postman.co/workspace/holiday-calendar~6cc3af8a-b6ed-4e32-bf39-c727f9d852e7/collection/5902954-7f97320b-549f-4863-806e-cc6e57fdd721?action=share&source=collection_link&creator=5902954"
+	},
+	"item": [
+		{
+			"name": "Ingredients",
+			"item": [
+				{
+					"name": "GET all ingredients",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/ingredients",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"ingredients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET ingredient by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/ingredients/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"ingredients",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update ingredient",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Vidutinis kiaušinis\",\r\n  \"kcalPer100\": 155,\r\n  \"proteinPer100\": 13,\r\n  \"fatPer100\": 11,\r\n  \"carbsPer100\": 1.5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/ingredients/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"ingredients",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete ingredient",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/ingredients/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"ingredients",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for ingredients (eggs, bread, flour, etc.) used in recipes.\n\nStores nutritional values per 100g and is used to calculate recipe calories and macros.\n\n**GET all**\n\n> List all ingredients. \n  \n\n**GET by id**\n\n> Get one ingredient by ID. \n  \n\n**PUT update**\n\n> Update ingredient nutrition and name. \n  \n\n**DELETE**\n\n> Delete ingredient by ID."
+		}
+	]
+}

@@ -42,6 +42,12 @@ Open H2 console:
 http://localhost:8080/h2-console
 ```
 
+## Run in Debug (PROD\DEV)
+1. Open Run / Debug Configurations
+2. In Program arguments, add:
+   ```--spring.profiles.active=prod```
+3. Apply and run debug.
+
 ## Flyway Migrations
 Flyway scripts live in:
 ```
@@ -62,3 +68,23 @@ Apply migrations:
 ```
 mvn flyway:migrate
 ```
+
+## Reset Database (Manual)
+If you need to drop all tables and enums in PostgreSQL (this will delete all data!).
+
+### Using pgAdmin
+1. Open pgAdmin and connect to your `mealplanner` database.
+2. Open the **Query Tool**.
+3. Run the script located at:
+```
+src/main/resources/sql/drop_all_tables_pg.sql
+```
+### Using psql (Command Line)
+1. Open your terminal or PowerShell.
+2. Make sure `psql` is installed and in your system PATH.
+3. Run the command:
+```
+psql -U postgres -d mealplanner -f src/main/resources/sql/drop_all_tables_pg.sql
+```
+
+⚠️ **Warning:** Only use this in development. All data will be lost!
