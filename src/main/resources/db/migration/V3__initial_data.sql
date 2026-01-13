@@ -6,11 +6,19 @@ VALUES
 (4, 'Virtas kiaulienos kumpis', 135, 18.5, 4, 1.5),
 (5, 'Biorina Garintos grikių kruopos (grikiai)', 344, 13, 3.1, 63);
 
+
+
 INSERT INTO recipe_class (id, title, instructions)
 VALUES
 (1, 'Kumpio sumuštiniai', 'Ant duonos riekelės dedamas plonai pjaustytas virtas kumpis.'),
 (2, 'Virti grikiai', 'Grikius virkite vandenyje 15 minučių.'),
 (3, 'Virti kiaušiniai', 'Kiaušinius virkite vandenyje 6 minutes nuo užvirimo.');
+
+-- Make the sequence aware of the max id
+--SELECT setval(pg_get_serial_sequence('recipe_class', 'id'), MAX(id))
+--FROM recipe_class;
+-- Update the sequence to the max id
+SELECT setval(pg_get_serial_sequence('recipe_class', 'id'), (SELECT MAX(id) FROM recipe_class));
 
 INSERT INTO recipe (id, recipe_class_id, meal_type)
 VALUES

@@ -31,6 +31,7 @@ public class RecipeClassService {
                 .orElseThrow(() -> new RuntimeException("RecipeClass not found"));
     }
 
+    //TODO: update to show List<Recipe>
     public List<RecipeClassDto> getAll() {
         return repository.findAll()
                 .stream()

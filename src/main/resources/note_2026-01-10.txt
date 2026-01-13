@@ -1,4 +1,9 @@
 1. Rest operacijos (CRUD)
+1.1. Test REST operacijas (CRUD)
+1.1.1. Test RecipeClass
+1.1.1.1. Test RecipeClass, kai ta pati recepto klasė turi du receptus.
+1.1.2. Test Recipe
+1.1.3. Test Recipe, kai composite recipe yra.
 2. React js front-end
 
 3.Pageable list

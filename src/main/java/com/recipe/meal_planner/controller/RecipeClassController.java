@@ -31,6 +31,7 @@ public class RecipeClassController {
 
     @PutMapping("/{id}")
     public RecipeClassDto update(@PathVariable Long id, @RequestBody RecipeClassDto dto) {
+//        TODO: update to be able to update only instructions, only title
         return service.update(id, dto);
     }
 
