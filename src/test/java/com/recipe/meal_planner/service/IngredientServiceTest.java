@@ -32,10 +32,8 @@ class IngredientServiceTest {
 
     @Test
     void get_whenIngredientsExist_returnIngredient() {
-        Ingredient ingredient = createEggIngredient();
-
         when(ingredientRepository.findById(anyLong()))
-                .thenReturn(Optional.of(ingredient));
+                .thenReturn(Optional.of(createEggIngredient()));
 
         IngredientDto ingredientDto = ingredientService.get(1L);
 
@@ -117,11 +115,54 @@ class IngredientServiceTest {
         assertEquals(1.5, egg.carbsPer100());
         IngredientDto bread = result.get(1);
         assertEquals("Palangos šviesi duona", bread.name());
-        assertEquals(224.0, bread.kcalPer100(), 0.001);
+        assertEquals(224.0, bread.kcalPer100());
         assertEquals(5.3, bread.proteinPer100());
         assertEquals(1.9, bread.fatPer100());
         assertEquals(44.3, bread.carbsPer100());
         verify(ingredientRepository).findAll();
+    }
+
+    @Test
+    void update_whenIngredientExists_returnUpdatedIngredient() {
+        IngredientDto ingredientDto = new IngredientDto(0, "Paukščio kiaušinis", 160.0, 12.0,
+                10.0, 2.0);
+
+        Ingredient egg = createEggIngredient();
+
+        Ingredient updatedEgg = new Ingredient();
+        updatedEgg.setId(egg.getId());
+        updatedEgg.setName(ingredientDto.name());
+        updatedEgg.setKcalPer100(ingredientDto.kcalPer100());
+        updatedEgg.setProteinPer100(ingredientDto.proteinPer100());
+        updatedEgg.setFatPer100(ingredientDto.fatPer100());
+        updatedEgg.setCarbsPer100(ingredientDto.carbsPer100());
+
+        when(ingredientRepository.findById(1L))
+                .thenReturn(Optional.of(egg));
+
+        when(ingredientRepository.save(any()))
+                .thenReturn(updatedEgg);
+
+        IngredientDto result = ingredientService.update(1L, ingredientDto);
+        assertNotNull(result);
+        assertEquals(ingredientDto.name(), result.name());
+        assertEquals(ingredientDto.kcalPer100(), result.kcalPer100());
+        assertEquals(ingredientDto.proteinPer100(), result.proteinPer100());
+        assertEquals(ingredientDto.fatPer100(), result.fatPer100());
+        assertEquals(ingredientDto.carbsPer100(), result.carbsPer100());
+
+        verify(ingredientRepository).findById(1L);
+
+        ArgumentCaptor<Ingredient> captor = ArgumentCaptor.forClass(Ingredient.class);
+        verify(ingredientRepository).save(captor.capture());
+        Ingredient savedIngredient = captor.getValue();
+        assertNotNull(savedIngredient);
+        assertEquals(ingredientDto.name(), savedIngredient.getName());
+        assertEquals(egg.getId(), savedIngredient.getId());
+        assertEquals(ingredientDto.kcalPer100(), savedIngredient.getKcalPer100());
+        assertEquals(ingredientDto.proteinPer100(), savedIngredient.getProteinPer100());
+        assertEquals(ingredientDto.fatPer100(), savedIngredient.getFatPer100());
+        assertEquals(ingredientDto.carbsPer100(), savedIngredient.getCarbsPer100());
     }
 
     private static Ingredient createEggIngredient() {
