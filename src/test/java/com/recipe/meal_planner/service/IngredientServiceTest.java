@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,13 +32,7 @@ class IngredientServiceTest {
 
     @Test
     void get_whenIngredientsExist_returnIngredient() {
-        Ingredient ingredient = new Ingredient();
-        ingredient.setId(1L);
-        ingredient.setName("Kiaušinis");
-        ingredient.setKcalPer100(155.0);
-        ingredient.setProteinPer100(13.0);
-        ingredient.setFatPer100(11.0);
-        ingredient.setCarbsPer100(1.5);
+        Ingredient ingredient = createEggIngredient();
 
         when(ingredientRepository.findById(anyLong()))
                 .thenReturn(Optional.of(ingredient));
@@ -98,5 +93,45 @@ class IngredientServiceTest {
         assertEquals(1.5, savedIngredient.getCarbsPer100());
     }
 
+    @Test
+    void getAll_whenIngredientsExist_returnIngredients() {
+        Ingredient breadIngredient = new Ingredient();
+        breadIngredient.setId(2L);
+        breadIngredient.setName("Palangos šviesi duona");
+        breadIngredient.setKcalPer100(224.0);
+        breadIngredient.setProteinPer100(5.3);
+        breadIngredient.setFatPer100(1.9);
+        breadIngredient.setCarbsPer100(44.3);
 
+        when(ingredientRepository.findAll())
+                .thenReturn(List.of(createEggIngredient(), breadIngredient));
+
+        List<IngredientDto> result = ingredientService.getAll();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        IngredientDto egg = result.get(0);
+        assertEquals("Kiaušinis", egg.name());
+        assertEquals(155.0, egg.kcalPer100(), 0.001);
+        assertEquals(13.0, egg.proteinPer100());
+        assertEquals(11.0, egg.fatPer100());
+        assertEquals(1.5, egg.carbsPer100());
+        IngredientDto bread = result.get(1);
+        assertEquals("Palangos šviesi duona", bread.name());
+        assertEquals(224.0, bread.kcalPer100(), 0.001);
+        assertEquals(5.3, bread.proteinPer100());
+        assertEquals(1.9, bread.fatPer100());
+        assertEquals(44.3, bread.carbsPer100());
+        verify(ingredientRepository).findAll();
+    }
+
+    private static Ingredient createEggIngredient() {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setId(1L);
+        ingredient.setName("Kiaušinis");
+        ingredient.setKcalPer100(155.0);
+        ingredient.setProteinPer100(13.0);
+        ingredient.setFatPer100(11.0);
+        ingredient.setCarbsPer100(1.5);
+        return ingredient;
+    }
 }
