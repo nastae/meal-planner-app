@@ -1,7 +1,9 @@
 package com.recipe.meal_planner.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.recipe.meal_planner.advice.GlobalExceptionHandler;
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.service.IngredientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +15,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class IngredientControllerTest {
@@ -32,15 +36,15 @@ public class IngredientControllerTest {
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(ingredientController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(ingredientController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
     void create_whenValidIngredientsProvided_returnIngredient() throws Exception {
-        IngredientDto request = new IngredientDto(0, "Kiaušinis", 155, 13,
-                11, 1.5);
-        IngredientDto response = new IngredientDto(1L, "Kiaušinis", 155, 13,
-                11, 1.5);
+        IngredientDto request = createEggIngredientDto(0, "Kiaušinis");
+        IngredientDto response = createEggIngredientDto(1L, "Kiaušinis");
         when(ingredientService.create(request))
                 .thenReturn(response);
 
@@ -53,11 +57,41 @@ public class IngredientControllerTest {
 
     @Test
     void create_whenIngredientNameIsMissing_returnBadRequest() throws Exception {
-        IngredientDto request = new IngredientDto(0, null, 155, 13, 11, 1.5);
+        IngredientDto request = createEggIngredientDto(0, null);
 
         mockMvc.perform(post("/api/ingredients")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void get_whenIngredientExists_returnIngredient() throws Exception {
+        Long ingredientId = 1L;
+        IngredientDto response = createEggIngredientDto(ingredientId, "Kiaušinis");
+        when(ingredientService.get(ingredientId))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/ingredients/{id}", ingredientId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
+    }
+
+    @Test
+    void get_whenIngredientNotFound_returnNotFound() throws Exception {
+        Long ingredientId = 999L;
+        when(ingredientService.get(ingredientId))
+                .thenThrow(new IngredientNotFoundException(ingredientId));
+
+        mockMvc.perform(get("/api/ingredients/{id}", ingredientId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Ingredient not found with id " + ingredientId));
+    }
+
+    private static IngredientDto createEggIngredientDto(long id, String name) {
+        return new IngredientDto(id, name, 155, 13,
+                11, 1.5);
     }
 }

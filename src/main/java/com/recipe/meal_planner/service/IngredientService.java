@@ -1,6 +1,7 @@
 package com.recipe.meal_planner.service;
 
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class IngredientService {
     public IngredientDto get(Long id) {
         return ingredientRepository.findById(id)
                 .map(this::toDto)
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                .orElseThrow(() -> new IngredientNotFoundException(id));
     }
 
     public List<IngredientDto> getAll() {
@@ -43,7 +44,7 @@ public class IngredientService {
 
     public IngredientDto update(Long id, IngredientDto dto) {
         Ingredient ingredient = ingredientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                .orElseThrow(() -> new IngredientNotFoundException(id));
         ingredient.setName(dto.name());
         ingredient.setKcalPer100(dto.kcalPer100());
         ingredient.setProteinPer100(dto.proteinPer100());

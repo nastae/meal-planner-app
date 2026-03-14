@@ -1,6 +1,7 @@
 package com.recipe.meal_planner.service;
 
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
 import org.junit.jupiter.api.Test;
@@ -52,9 +53,9 @@ class IngredientServiceTest {
         when(ingredientRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(RuntimeException.class,
+        Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.get(1L));
-        assertEquals("Ingredient not found", exception.getMessage());
+        assertEquals("Ingredient not found with id 1", exception.getMessage());
 
         verify(ingredientRepository).findById(1L);
     }
@@ -172,9 +173,9 @@ class IngredientServiceTest {
         when(ingredientRepository.findById(ingredientId))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(RuntimeException.class,
+        Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.update(ingredientId, createChickenEggIngredientDto()));
-        assertEquals("Ingredient not found", exception.getMessage());
+        assertEquals("Ingredient not found with id 1", exception.getMessage());
 
         verify(ingredientRepository).findById(1L);
         verify(ingredientRepository, never()).save(any());
