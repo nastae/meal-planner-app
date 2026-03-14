@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,8 +52,9 @@ class IngredientServiceTest {
         when(ingredientRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class,
+        Exception exception = assertThrows(RuntimeException.class,
                 () -> ingredientService.get(1L));
+        assertEquals("Ingredient not found", exception.getMessage());
 
         verify(ingredientRepository).findById(1L);
     }
@@ -124,8 +126,7 @@ class IngredientServiceTest {
 
     @Test
     void update_whenIngredientExists_returnUpdatedIngredient() {
-        IngredientDto ingredientDto = new IngredientDto(0, "Paukščio kiaušinis", 160.0, 12.0,
-                10.0, 2.0);
+        IngredientDto ingredientDto = createChickenEggIngredientDto();
 
         Ingredient egg = createEggIngredient();
 
@@ -165,6 +166,20 @@ class IngredientServiceTest {
         assertEquals(ingredientDto.carbsPer100(), savedIngredient.getCarbsPer100());
     }
 
+    @Test
+    void update_whenIngredientNotFound_throwsRuntimeException() {
+        Long ingredientId = 1L;
+        when(ingredientRepository.findById(ingredientId))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class,
+                () -> ingredientService.update(ingredientId, createChickenEggIngredientDto()));
+        assertEquals("Ingredient not found", exception.getMessage());
+
+        verify(ingredientRepository).findById(1L);
+        verify(ingredientRepository, never()).save(any());
+    }
+
     private static Ingredient createEggIngredient() {
         Ingredient ingredient = new Ingredient();
         ingredient.setId(1L);
@@ -174,5 +189,10 @@ class IngredientServiceTest {
         ingredient.setFatPer100(11.0);
         ingredient.setCarbsPer100(1.5);
         return ingredient;
+    }
+
+    private static IngredientDto createChickenEggIngredientDto() {
+        return new IngredientDto(0, "Paukščio kiaušinis", 160.0, 12.0,
+                10.0, 2.0);
     }
 }
