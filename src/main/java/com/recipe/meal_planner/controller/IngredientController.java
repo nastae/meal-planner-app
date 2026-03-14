@@ -3,6 +3,7 @@ package com.recipe.meal_planner.controller;
 
 import com.recipe.meal_planner.dto.IngredientDto;
 import com.recipe.meal_planner.service.IngredientService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,7 @@ public class IngredientController {
     private final IngredientService service;
 
     @PostMapping
-    public IngredientDto create(@RequestBody IngredientDto dto) {
+    public IngredientDto create(@RequestBody @Valid IngredientDto dto) {
         return service.create(dto);
     }
 
