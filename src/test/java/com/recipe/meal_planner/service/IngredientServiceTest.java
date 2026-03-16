@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +50,7 @@ class IngredientServiceTest {
     }
 
     @Test
-    void get_whenIngredientsNotFound_throwRuntimeException() {
+    void get_whenIngredientsNotFound_throwException() {
         when(ingredientRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -168,7 +169,7 @@ class IngredientServiceTest {
     }
 
     @Test
-    void update_whenIngredientNotFound_throwsRuntimeException() {
+    void update_whenIngredientNotFound_throwsException() {
         Long ingredientId = 1L;
         when(ingredientRepository.findById(ingredientId))
                 .thenReturn(Optional.empty());
@@ -177,8 +178,38 @@ class IngredientServiceTest {
                 () -> ingredientService.update(ingredientId, createChickenEggIngredientDto()));
         assertEquals("Ingredient not found with id 1", exception.getMessage());
 
-        verify(ingredientRepository).findById(1L);
+        verify(ingredientRepository).findById(ingredientId);
         verify(ingredientRepository, never()).save(any());
+    }
+
+    @Test
+    void delete_whenIngredientExists_callRepositoryDeleteBy() {
+        Long ingredientId = 1L;
+        Ingredient eggIngredient = createEggIngredient();
+
+        when(ingredientRepository.findById(ingredientId))
+                .thenReturn(Optional.of(eggIngredient));
+
+        ingredientService.delete(ingredientId);
+
+        verify(ingredientRepository).findById(ingredientId);
+        verify(ingredientRepository).delete(eggIngredient);
+        verifyNoMoreInteractions(ingredientRepository);
+    }
+
+    @Test
+    void delete_whenIngredientNotFound_throwsException() {
+        Long ingredientId = 1L;
+
+        when(ingredientRepository.findById(ingredientId))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IngredientNotFoundException.class,
+                () -> ingredientService.delete(ingredientId));
+        assertEquals("Ingredient not found with id 1", exception.getMessage());
+
+        verify(ingredientRepository).findById(ingredientId);
+        verifyNoMoreInteractions(ingredientRepository);
     }
 
     private static Ingredient createEggIngredient() {

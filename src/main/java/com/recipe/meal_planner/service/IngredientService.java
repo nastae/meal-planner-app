@@ -55,7 +55,9 @@ public class IngredientService {
     }
 
     public void delete(Long id) {
-        ingredientRepository.deleteById(id);
+        Ingredient ingredient = ingredientRepository.findById(id)
+                        .orElseThrow(() -> new IngredientNotFoundException(id));
+        ingredientRepository.delete(ingredient);
     }
 
     private IngredientDto toDto(Ingredient ingredient) {
