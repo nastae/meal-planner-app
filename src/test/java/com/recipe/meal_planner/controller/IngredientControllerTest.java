@@ -14,6 +14,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,6 +58,7 @@ public class IngredientControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
+        verify(ingredientService).create(request);
     }
 
     @Test
@@ -63,6 +69,7 @@ public class IngredientControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+        verify(ingredientService, never()).create(any());
     }
 
     @Test
@@ -72,10 +79,10 @@ public class IngredientControllerTest {
         when(ingredientService.get(ingredientId))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/api/ingredients/{id}", ingredientId)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/ingredients/{id}", ingredientId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
+        verify(ingredientService).get(ingredientId);
     }
 
     @Test
@@ -84,10 +91,26 @@ public class IngredientControllerTest {
         when(ingredientService.get(ingredientId))
                 .thenThrow(new IngredientNotFoundException(ingredientId));
 
-        mockMvc.perform(get("/api/ingredients/{id}", ingredientId)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/ingredients/{id}", ingredientId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Ingredient not found with id " + ingredientId));
+        verify(ingredientService).get(ingredientId);
+    }
+
+    @Test
+    void getAll_whenIngredientsExist_returnIngredients() throws Exception {
+        IngredientDto breadIngredientDto = new IngredientDto(2L, "Palangos šviesi duona", 244, 5.3,
+                1.9, 44.3);
+
+        List<IngredientDto> response = List.of(createEggIngredientDto(1L, "Kiaušinis"), breadIngredientDto);
+
+        when(ingredientService.getAll())
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/ingredients"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
+        verify(ingredientService).getAll();
     }
 
     private static IngredientDto createEggIngredientDto(long id, String name) {
