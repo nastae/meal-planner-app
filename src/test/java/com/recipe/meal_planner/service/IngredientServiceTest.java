@@ -56,7 +56,7 @@ class IngredientServiceTest {
 
         Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.get(1L));
-        assertEquals("Ingredient not found with id 1", exception.getMessage());
+        assertEquals(new IngredientNotFoundException(1L).getMessage(), exception.getMessage());
 
         verify(ingredientRepository).findById(1L);
     }
@@ -176,7 +176,7 @@ class IngredientServiceTest {
 
         Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.update(ingredientId, createChickenEggIngredientDto()));
-        assertEquals("Ingredient not found with id 1", exception.getMessage());
+        assertEquals(new IngredientNotFoundException(1L).getMessage(), exception.getMessage());
 
         verify(ingredientRepository).findById(ingredientId);
         verify(ingredientRepository, never()).save(any());
@@ -206,7 +206,7 @@ class IngredientServiceTest {
 
         Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.delete(ingredientId));
-        assertEquals("Ingredient not found with id 1", exception.getMessage());
+        assertEquals(new IngredientNotFoundException(1L).getMessage(), exception.getMessage());
 
         verify(ingredientRepository).findById(ingredientId);
         verifyNoMoreInteractions(ingredientRepository);

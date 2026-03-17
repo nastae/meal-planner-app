@@ -17,10 +17,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -60,6 +63,7 @@ public class IngredientControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
         verify(ingredientService).create(request);
     }
 
@@ -71,6 +75,7 @@ public class IngredientControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+
         verify(ingredientService, never()).create(any());
     }
 
@@ -84,6 +89,7 @@ public class IngredientControllerTest {
         mockMvc.perform(get("/api/ingredients/{id}", ingredientId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
         verify(ingredientService).get(ingredientId);
     }
 
@@ -95,7 +101,8 @@ public class IngredientControllerTest {
 
         mockMvc.perform(get("/api/ingredients/{id}", ingredientId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Ingredient not found with id " + ingredientId));
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(ingredientId).getMessage()));
+
         verify(ingredientService).get(ingredientId);
     }
 
@@ -112,6 +119,7 @@ public class IngredientControllerTest {
         mockMvc.perform(get("/api/ingredients"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
         verify(ingredientService).getAll();
     }
 
@@ -128,6 +136,7 @@ public class IngredientControllerTest {
                 .content(objectMapper.writeValueAsString(eggIngredientDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(eggIngredientDto)));
+
         verify(ingredientService).update(ingredientId, eggIngredientDto);
     }
 
@@ -140,6 +149,7 @@ public class IngredientControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(ingredientDto)))
                 .andExpect(status().isBadRequest());
+
         verifyNoInteractions(ingredientService);
     }
 
@@ -155,8 +165,35 @@ public class IngredientControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(eggIngredientDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Ingredient not found with id " + ingredientId));
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(ingredientId).getMessage()));
+
         verify(ingredientService).update(ingredientId, eggIngredientDto);
+    }
+
+    @Test
+    void delete_whenIngredientExists_callsServiceDelete() throws Exception {
+        Long ingredientId = 1L;
+
+        mockMvc.perform(delete("/api/ingredients/{id}", ingredientId))
+                .andExpect(status().isNoContent());
+
+        verify(ingredientService).delete(ingredientId);
+        verifyNoMoreInteractions(ingredientService);
+    }
+
+    @Test
+    void delete_whenIngredientNotFound_returnNotFound() throws Exception {
+        Long ingredientId = 999L;
+
+        doThrow(new IngredientNotFoundException(ingredientId))
+                .when(ingredientService).delete(ingredientId);
+
+        mockMvc.perform(delete("/api/ingredients/{id}", ingredientId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(ingredientId).getMessage()));
+
+        verify(ingredientService).delete(ingredientId);
+        verifyNoMoreInteractions(ingredientService);
     }
 
     private static IngredientDto createEggIngredientDto(long id, String name) {
