@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class IngredientControllerTest {
+class IngredientControllerTest {
 
     private MockMvc mockMvc;
 
@@ -61,7 +61,7 @@ public class IngredientControllerTest {
         mockMvc.perform(post("/api/ingredients")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
 
         verify(ingredientService).create(request);

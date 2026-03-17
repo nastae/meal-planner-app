@@ -1,0 +1,74 @@
+package com.recipe.meal_planner.integration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.model.Ingredient;
+import com.recipe.meal_planner.repository.IngredientRepository;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@Transactional
+class IngredientIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private IngredientRepository ingredientRepository;
+
+    @BeforeEach
+    void cleanDatabase() {
+        ingredientRepository.deleteAll();
+    }
+
+    @Test
+    void create_whenValidIngredientProvided_returnCreatedIngredient() throws Exception {
+        IngredientDto eggIngredientDto = createEggIngredientDto(0L);
+        IngredientDto createdEggIngredientDto = createEggIngredientDto(1L);
+
+        mockMvc.perform(post("/api/ingredients")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(eggIngredientDto)))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(createdEggIngredientDto)));
+
+        List<Ingredient> ingredients = ingredientRepository.findAll();
+        assertEquals(1, ingredients.size());
+
+        Ingredient savedIngredient = ingredients.getFirst();
+        assertNotNull(savedIngredient.getId());
+        assertEquals("Kiaušinis", savedIngredient.getName());
+        assertEquals(155, savedIngredient.getKcalPer100());
+        assertEquals(13, savedIngredient.getProteinPer100());
+        assertEquals(11, savedIngredient.getFatPer100());
+        assertEquals(1.5, savedIngredient.getCarbsPer100());
+    }
+
+    private static IngredientDto createEggIngredientDto(long id) {
+        return new IngredientDto(id, "Kiaušinis", 155, 13,
+                11, 1.5);
+    }
+}

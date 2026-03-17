@@ -26,6 +26,7 @@ public class IngredientController {
     private final IngredientService service;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public IngredientDto create(@RequestBody @Valid IngredientDto dto) {
         return service.create(dto);
     }
