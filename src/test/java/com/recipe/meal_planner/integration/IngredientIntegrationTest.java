@@ -2,6 +2,7 @@ package com.recipe.meal_planner.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
 import jakarta.transaction.Transactional;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -81,6 +83,15 @@ class IngredientIntegrationTest {
         mockMvc.perform(get("/api/ingredients/{id}", eggIngredient.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedIngredientDto)));
+    }
+
+    @Test
+    void get_whenIngredientNotFound_returnNotFound() throws Exception {
+        Long missingId = 999L;
+
+        mockMvc.perform(get("/api/ingredients/{id}", missingId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingId).getMessage()));
     }
 
     private static IngredientDto createIngredientDto(Ingredient ingredient) {
