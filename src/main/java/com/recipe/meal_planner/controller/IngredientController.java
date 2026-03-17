@@ -39,7 +39,7 @@ public class IngredientController {
     }
 
     @PutMapping("/{id}")
-    public IngredientDto update(@PathVariable Long id, @RequestBody IngredientDto dto) {
+    public IngredientDto update(@PathVariable Long id, @RequestBody @Valid IngredientDto dto) {
         return service.update(id, dto);
     }
 
