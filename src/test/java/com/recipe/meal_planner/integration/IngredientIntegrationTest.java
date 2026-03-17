@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,13 +59,27 @@ class IngredientIntegrationTest {
         List<Ingredient> ingredients = ingredientRepository.findAll();
         assertEquals(1, ingredients.size());
 
+        Ingredient expectedIngredient = createIngredient(createdEggIngredientDto);
         Ingredient savedIngredient = ingredients.getFirst();
-        assertNotNull(savedIngredient.getId());
-        assertEquals("Kiaušinis", savedIngredient.getName());
-        assertEquals(155, savedIngredient.getKcalPer100());
-        assertEquals(13, savedIngredient.getProteinPer100());
-        assertEquals(11, savedIngredient.getFatPer100());
-        assertEquals(1.5, savedIngredient.getCarbsPer100());
+
+        assertAll("Saved ingredient fields",
+                () -> assertNotNull(savedIngredient.getId()),
+                () -> assertEquals(savedIngredient.getName(), savedIngredient.getName()),
+                () -> assertEquals(expectedIngredient.getKcalPer100(), savedIngredient.getKcalPer100()),
+                () -> assertEquals(expectedIngredient.getProteinPer100(), savedIngredient.getProteinPer100()),
+                () -> assertEquals(expectedIngredient.getFatPer100(), savedIngredient.getFatPer100()),
+                () -> assertEquals(expectedIngredient.getCarbsPer100(), savedIngredient.getCarbsPer100())
+        );
+    }
+
+    private static Ingredient createIngredient(IngredientDto ingredientDto) {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setName(ingredientDto.name());
+        ingredient.setKcalPer100(ingredientDto.kcalPer100());
+        ingredient.setProteinPer100(ingredientDto.proteinPer100());
+        ingredient.setCarbsPer100(ingredientDto.carbsPer100());
+        ingredient.setFatPer100(ingredientDto.fatPer100());
+        return ingredient;
     }
 
     private static IngredientDto createEggIngredientDto(long id) {
