@@ -224,7 +224,7 @@ class IngredientServiceTest {
     }
 
     private static IngredientDto createChickenEggIngredientDto() {
-        return new IngredientDto(0, "Paukščio kiaušinis", 160.0, 12.0,
+        return new IngredientDto(0, "Vištos kiaušinis", 160.0, 12.0,
                 10.0, 2.0);
     }
 }

@@ -17,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -26,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,11 +90,11 @@ class IngredientIntegrationTest {
 
     @Test
     void get_whenIngredientNotFound_returnNotFound() throws Exception {
-        Long missingId = 999L;
+        Long missingIngredientId = 999L;
 
-        mockMvc.perform(get("/api/ingredients/{id}", missingId))
+        mockMvc.perform(get("/api/ingredients/{id}", missingIngredientId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingId).getMessage()));
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingIngredientId).getMessage()));
     }
 
     @Test
@@ -112,6 +112,49 @@ class IngredientIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(2));
 
         assertEquals(2, ingredientRepository.count());
+    }
+
+    @Test
+    void update_whenIngredientExists_returnUpdatedIngredient() throws Exception {
+        Ingredient eggIngredient = ingredientRepository.save(createEggIngredient());
+
+        IngredientDto updatedEggIngredientDto = createChickenEggIngredientDto(0L);
+        IngredientDto expectedEggIngredientDto = createChickenEggIngredientDto(eggIngredient.getId());
+
+        mockMvc.perform(put("/api/ingredients/{id}", eggIngredient.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updatedEggIngredientDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedEggIngredientDto)));
+
+        Ingredient updatedIngredient = ingredientRepository.findById(eggIngredient.getId()).orElseThrow();
+        assertAll("Updated ingredient fields",
+                () -> assertEquals(expectedEggIngredientDto.id(), updatedIngredient.getId()),
+                () -> assertEquals(expectedEggIngredientDto.name(), updatedIngredient.getName()),
+                () -> assertEquals(expectedEggIngredientDto.kcalPer100(), updatedIngredient.getKcalPer100()),
+                () -> assertEquals(expectedEggIngredientDto.proteinPer100(), updatedIngredient.getProteinPer100()),
+                () -> assertEquals(expectedEggIngredientDto.fatPer100(), updatedIngredient.getFatPer100()),
+                () -> assertEquals(expectedEggIngredientDto.carbsPer100(), updatedIngredient.getCarbsPer100())
+        );
+    }
+
+    @Test
+    void update_whenIngredientNotFound_returnNotFound() throws Exception {
+        Long missingIngredientId = 999L;
+        IngredientDto updatedEggIngredientDto = createEggIngredientDto(0L);
+
+        mockMvc.perform(put("/api/ingredients/{id}", missingIngredientId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updatedEggIngredientDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingIngredientId).getMessage()));
+
+        assertEquals(0, ingredientRepository.count());
+    }
+
+    private static IngredientDto createChickenEggIngredientDto(Long id) {
+        return new IngredientDto(id, "Vištos kiaušinis",
+                160, 12, 10, 2);
     }
 
     private static IngredientDto createIngredientDto(Ingredient ingredient) {
