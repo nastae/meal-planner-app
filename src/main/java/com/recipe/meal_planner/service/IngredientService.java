@@ -5,8 +5,10 @@ import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,9 +38,10 @@ public class IngredientService {
     }
 
     public List<IngredientDto> getAll() {
-        return ingredientRepository.findAll()
+        return ingredientRepository.findAll(Sort.by("id"))
                 .stream()
                 .map(this::toDto)
+//                .sorted(Comparator.comparing(IngredientDto::id))
                 .collect(Collectors.toList());
     }
 

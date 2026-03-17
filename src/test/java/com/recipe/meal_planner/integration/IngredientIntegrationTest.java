@@ -16,6 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -94,6 +97,23 @@ class IngredientIntegrationTest {
                 .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingId).getMessage()));
     }
 
+    @Test
+    void getAll_whenIngredientsExist_returnIngredients() throws Exception {
+        Ingredient eggIngredient = ingredientRepository.save(createEggIngredient());
+        Ingredient breadIngredient = ingredientRepository.save(createBreadIngredient());
+        List<IngredientDto> expectedIngredients = new ArrayList<>();
+        expectedIngredients.add(createIngredientDto(eggIngredient));
+        expectedIngredients.add(createIngredientDto(breadIngredient));
+        expectedIngredients.sort(Comparator.comparing(IngredientDto::id));
+
+        mockMvc.perform(get("/api/ingredients"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedIngredients)))
+                .andExpect(jsonPath("$.length()").value(2));
+
+        assertEquals(2, ingredientRepository.count());
+    }
+
     private static IngredientDto createIngredientDto(Ingredient ingredient) {
         return new IngredientDto(ingredient.getId(), ingredient.getName(), ingredient.getKcalPer100(),
                 ingredient.getProteinPer100(), ingredient.getFatPer100(), ingredient.getCarbsPer100());
@@ -106,6 +126,16 @@ class IngredientIntegrationTest {
         ingredient.setProteinPer100(13.0);
         ingredient.setFatPer100(11.0);
         ingredient.setCarbsPer100(1.5);
+        return ingredient;
+    }
+
+    private static Ingredient createBreadIngredient() {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setName("Palangos šviesi duona");
+        ingredient.setKcalPer100(224.0);
+        ingredient.setProteinPer100(5.3);
+        ingredient.setFatPer100(1.9);
+        ingredient.setCarbsPer100(44.3);
         return ingredient;
     }
 
