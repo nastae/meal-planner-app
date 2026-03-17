@@ -22,7 +22,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -150,6 +153,25 @@ class IngredientIntegrationTest {
                 .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingIngredientId).getMessage()));
 
         assertEquals(0, ingredientRepository.count());
+    }
+
+    @Test
+    void delete_whenIngredientExists_removesIngredient() throws Exception {
+        Ingredient eggIngredient = ingredientRepository.save(createEggIngredient());
+
+        mockMvc.perform(delete("/api/ingredients/{id}", eggIngredient.getId()))
+                .andExpect(status().isNoContent());
+
+        assertTrue(ingredientRepository.findById(eggIngredient.getId()).isEmpty());
+    }
+
+    @Test
+    void delete_whenIngredientNotFound_returnNotFound() throws Exception {
+        Long missingIngredientId = 999L;
+
+        mockMvc.perform(delete("/api/ingredients/{id}", missingIngredientId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingIngredientId)));
     }
 
     private static IngredientDto createChickenEggIngredientDto(Long id) {
