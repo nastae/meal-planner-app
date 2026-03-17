@@ -20,6 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -72,13 +73,38 @@ class IngredientIntegrationTest {
         );
     }
 
+    @Test
+    void get_whenIngredientExists_returnIngredient() throws Exception {
+        Ingredient eggIngredient = ingredientRepository.save(createEggIngredient());
+        IngredientDto expectedIngredientDto = createIngredientDto(eggIngredient);
+
+        mockMvc.perform(get("/api/ingredients/{id}", eggIngredient.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedIngredientDto)));
+    }
+
+    private static IngredientDto createIngredientDto(Ingredient ingredient) {
+        return new IngredientDto(ingredient.getId(), ingredient.getName(), ingredient.getKcalPer100(),
+                ingredient.getProteinPer100(), ingredient.getFatPer100(), ingredient.getCarbsPer100());
+    }
+
+    private static Ingredient createEggIngredient() {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setName("Kiaušinis");
+        ingredient.setKcalPer100(155.0);
+        ingredient.setProteinPer100(13.0);
+        ingredient.setFatPer100(11.0);
+        ingredient.setCarbsPer100(1.5);
+        return ingredient;
+    }
+
     private static Ingredient createIngredient(IngredientDto ingredientDto) {
         Ingredient ingredient = new Ingredient();
         ingredient.setName(ingredientDto.name());
         ingredient.setKcalPer100(ingredientDto.kcalPer100());
         ingredient.setProteinPer100(ingredientDto.proteinPer100());
-        ingredient.setCarbsPer100(ingredientDto.carbsPer100());
         ingredient.setFatPer100(ingredientDto.fatPer100());
+        ingredient.setCarbsPer100(ingredientDto.carbsPer100());
         return ingredient;
     }
 
