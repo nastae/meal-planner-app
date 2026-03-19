@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
-    // Optional: add custom query methods if needed
+
+    boolean existsByNameIgnoreCase(String name);
 }

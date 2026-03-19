@@ -6,7 +6,7 @@ VALUES
 (4, 'Virtas kiaulienos kumpis', 135, 18.5, 4, 1.5),
 (5, 'Biorina Garintos grikių kruopos (grikiai)', 344, 13, 3.1, 63);
 
-
+SELECT setval(pg_get_serial_sequence('ingredient', 'id'), (SELECT MAX(id) FROM ingredient));
 
 INSERT INTO recipe_class (id, title, instructions)
 VALUES

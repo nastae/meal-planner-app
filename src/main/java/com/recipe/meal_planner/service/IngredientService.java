@@ -1,6 +1,7 @@
 package com.recipe.meal_planner.service;
 
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.DuplicateIngredientException;
 import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +19,10 @@ public class IngredientService {
     private final IngredientRepository ingredientRepository;
 
     public IngredientDto create(IngredientDto dto) {
+//        TODO: write unit, integration tests
+        if (ingredientRepository.existsByNameIgnoreCase(dto.name())) {
+            throw new DuplicateIngredientException(dto.name());
+        }
         Ingredient ingredient = new Ingredient();
         ingredient.setName(dto.name());
         ingredient.setKcalPer100(dto.kcalPer100());

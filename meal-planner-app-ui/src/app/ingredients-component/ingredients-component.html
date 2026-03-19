@@ -1,0 +1,17 @@
+<h2>Ingredients</h2>
+
+<button (click)="create()">Add Ingredient</button>
+@if (errorMessage()) {
+    <p style="color: red;">{{ errorMessage() }}</p>
+}
+
+<ul>
+    @for (ingredient of ingredients(); track ingredient.id) {
+        <li>
+            {{ ingredient.name }} ({{ ingredient.kcalPer100 }} kcal)
+
+            <button (click)="update(ingredient)">Edit</button>
+            <button (click)="delete(ingredient.id)">Delete</button>            
+        </li>
+    }
+</ul>
