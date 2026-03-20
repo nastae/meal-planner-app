@@ -19,7 +19,6 @@ public class IngredientService {
     private final IngredientRepository ingredientRepository;
 
     public IngredientDto create(IngredientDto dto) {
-//        TODO: write unit, integration tests
         if (ingredientRepository.existsByNameIgnoreCase(dto.name())) {
             throw new DuplicateIngredientException(dto.name());
         }
