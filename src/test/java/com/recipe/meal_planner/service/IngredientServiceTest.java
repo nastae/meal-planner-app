@@ -1,6 +1,7 @@
 package com.recipe.meal_planner.service;
 
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.DuplicateIngredientException;
 import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
@@ -10,16 +11,22 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -63,8 +70,7 @@ class IngredientServiceTest {
 
     @Test
     void create_whenValidIngredientsProvided_returnIngredient() {
-        IngredientDto ingredientDto = new IngredientDto(0L, "Kiaušinis", 155.0, 13.0,
-                11.0, 1.5);
+        IngredientDto ingredientDto = createEggIngredientDto();
 
         Ingredient ingredient = new Ingredient();
         ingredient.setId(1L);
@@ -96,6 +102,22 @@ class IngredientServiceTest {
     }
 
     @Test
+    void create_whenIngredientNameAlreadyExists_throwDuplicateIngredientException() {
+        IngredientDto eggIngredientDto = createEggIngredientDto();
+
+        when(ingredientRepository.existsByNameIgnoreCase(eggIngredientDto.name()))
+                .thenReturn(true);
+
+        DuplicateIngredientException exception = assertThrows(DuplicateIngredientException.class,
+                () -> ingredientService.create(eggIngredientDto));
+
+        assertEquals(new DuplicateIngredientException(eggIngredientDto.name()).getMessage(), exception.getMessage());
+        assertTrue(exception.getMessage().contains(eggIngredientDto.name()));
+        verify(ingredientRepository).existsByNameIgnoreCase(eggIngredientDto.name());
+        verify(ingredientRepository, never()).save(any());
+    }
+
+    @Test
     void getAll_whenIngredientsExist_returnIngredients() {
         Ingredient breadIngredient = new Ingredient();
         breadIngredient.setId(2L);
@@ -105,25 +127,44 @@ class IngredientServiceTest {
         breadIngredient.setFatPer100(1.9);
         breadIngredient.setCarbsPer100(44.3);
 
-        when(ingredientRepository.findAll())
+
+        when(ingredientRepository.findAll(eq(Sort.by("id"))))
                 .thenReturn(List.of(createEggIngredient(), breadIngredient));
 
         List<IngredientDto> result = ingredientService.getAll();
-        assertNotNull(result);
         assertEquals(2, result.size());
         IngredientDto egg = result.get(0);
-        assertEquals("Kiaušinis", egg.name());
-        assertEquals(155.0, egg.kcalPer100(), 0.001);
-        assertEquals(13.0, egg.proteinPer100());
-        assertEquals(11.0, egg.fatPer100());
-        assertEquals(1.5, egg.carbsPer100());
         IngredientDto bread = result.get(1);
-        assertEquals("Palangos šviesi duona", bread.name());
-        assertEquals(224.0, bread.kcalPer100());
-        assertEquals(5.3, bread.proteinPer100());
-        assertEquals(1.9, bread.fatPer100());
-        assertEquals(44.3, bread.carbsPer100());
-        verify(ingredientRepository).findAll();
+
+        assertAll("egg fields",
+                () -> assertEquals(1L, egg.id()),
+                () -> assertEquals("Kiaušinis", egg.name()),
+                () -> assertEquals(155.0, egg.kcalPer100(), 0.001),
+                () -> assertEquals(13.0, egg.proteinPer100()),
+                () -> assertEquals(11.0, egg.fatPer100()),
+                () -> assertEquals(1.5, egg.carbsPer100())
+        );
+
+        assertAll("bread fields",
+                () -> assertEquals(2L, bread.id()),
+                () -> assertEquals("Palangos šviesi duona", bread.name()),
+                () -> assertEquals(224.0, bread.kcalPer100()),
+                () -> assertEquals(5.3, bread.proteinPer100()),
+                () -> assertEquals(1.9, bread.fatPer100()),
+                () -> assertEquals(44.3, bread.carbsPer100())
+        );
+
+        assertEquals(List.of(1L, 2L),
+                result.stream().map(IngredientDto::id).toList());
+
+        ArgumentCaptor<Sort> sortCaptor = ArgumentCaptor.forClass(Sort.class);
+        verify(ingredientRepository, times(1)).findAll(sortCaptor.capture());
+
+        Sort.Order order = sortCaptor.getValue().getOrderFor("id");
+        assertAll("assert by id ASC",
+                () -> assertNotNull(order),
+                () -> assertEquals(Sort.Direction.ASC, order.getDirection())
+        );
     }
 
     @Test
@@ -176,7 +217,7 @@ class IngredientServiceTest {
 
         Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.update(ingredientId, createChickenEggIngredientDto()));
-        assertEquals(new IngredientNotFoundException(1L).getMessage(), exception.getMessage());
+        assertEquals(new IngredientNotFoundException(ingredientId).getMessage(), exception.getMessage());
 
         verify(ingredientRepository).findById(ingredientId);
         verify(ingredientRepository, never()).save(any());
@@ -206,7 +247,7 @@ class IngredientServiceTest {
 
         Exception exception = assertThrows(IngredientNotFoundException.class,
                 () -> ingredientService.delete(ingredientId));
-        assertEquals(new IngredientNotFoundException(1L).getMessage(), exception.getMessage());
+        assertEquals(new IngredientNotFoundException(ingredientId).getMessage(), exception.getMessage());
 
         verify(ingredientRepository).findById(ingredientId);
         verifyNoMoreInteractions(ingredientRepository);
@@ -221,6 +262,11 @@ class IngredientServiceTest {
         ingredient.setFatPer100(11.0);
         ingredient.setCarbsPer100(1.5);
         return ingredient;
+    }
+
+    private IngredientDto createEggIngredientDto() {
+        return new IngredientDto(0L, "Kiaušinis", 155.0, 13.0,
+                11.0, 1.5);
     }
 
     private static IngredientDto createChickenEggIngredientDto() {
