@@ -88,3 +88,7 @@ psql -U postgres -d mealplanner -f src/main/resources/sql/drop_all_tables_pg.sql
 ```
 
 ⚠️ **Warning:** Only use this in development. All data will be lost!
+
+## Future ideas
+1. Add standard formatting file and use it
+2. Write CI/CD pipelines

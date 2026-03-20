@@ -2,6 +2,7 @@ package com.recipe.meal_planner.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.DuplicateIngredientException;
 import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.model.Ingredient;
 import com.recipe.meal_planner.repository.IngredientRepository;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,9 +22,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -60,7 +60,7 @@ class IngredientIntegrationTest {
         IngredientDto createdEggIngredientDto = createEggIngredientDto(1L);
 
         mockMvc.perform(post("/api/ingredients")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(eggIngredientDto)))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(createdEggIngredientDto)));
@@ -79,6 +79,19 @@ class IngredientIntegrationTest {
                 () -> assertEquals(expectedIngredient.getFatPer100(), savedIngredient.getFatPer100()),
                 () -> assertEquals(expectedIngredient.getCarbsPer100(), savedIngredient.getCarbsPer100())
         );
+    }
+
+    @Test
+    void create_whenIngredientNameAlreadyExistsWithIgnoreCase_returnConflict() throws Exception {
+        ingredientRepository.save(createEggIngredient("kIAUŠINIS"));
+        IngredientDto eggIngredientDto = createEggIngredientDto(0L, "Kiaušinis");
+
+        mockMvc.perform(post("/api/ingredients")
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(eggIngredientDto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(
+                        new DuplicateIngredientException(eggIngredientDto.name()).getMessage()));
     }
 
     @Test
@@ -125,7 +138,7 @@ class IngredientIntegrationTest {
         IngredientDto expectedEggIngredientDto = createChickenEggIngredientDto(eggIngredient.getId());
 
         mockMvc.perform(put("/api/ingredients/{id}", eggIngredient.getId())
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedEggIngredientDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedEggIngredientDto)));
@@ -147,7 +160,7 @@ class IngredientIntegrationTest {
         IngredientDto updatedEggIngredientDto = createEggIngredientDto(0L);
 
         mockMvc.perform(put("/api/ingredients/{id}", missingIngredientId)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedEggIngredientDto)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(missingIngredientId).getMessage()));
@@ -185,8 +198,12 @@ class IngredientIntegrationTest {
     }
 
     private static Ingredient createEggIngredient() {
+        return createEggIngredient("Kiaušinis");
+    }
+
+    private static Ingredient createEggIngredient(String name) {
         Ingredient ingredient = new Ingredient();
-        ingredient.setName("Kiaušinis");
+        ingredient.setName(name);
         ingredient.setKcalPer100(155.0);
         ingredient.setProteinPer100(13.0);
         ingredient.setFatPer100(11.0);
@@ -215,7 +232,11 @@ class IngredientIntegrationTest {
     }
 
     private static IngredientDto createEggIngredientDto(long id) {
-        return new IngredientDto(id, "Kiaušinis", 155, 13,
+        return createEggIngredientDto(id, "Kiaušinis");
+    }
+
+    private static IngredientDto createEggIngredientDto(long id, String name) {
+        return new IngredientDto(id, name, 155, 13,
                 11, 1.5);
     }
 }
