@@ -3,6 +3,7 @@ package com.recipe.meal_planner.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recipe.meal_planner.advice.GlobalExceptionHandler;
 import com.recipe.meal_planner.dto.IngredientDto;
+import com.recipe.meal_planner.exception.DuplicateIngredientException;
 import com.recipe.meal_planner.exception.IngredientNotFoundException;
 import com.recipe.meal_planner.service.IngredientService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -59,7 +61,7 @@ class IngredientControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/ingredients")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
@@ -72,11 +74,26 @@ class IngredientControllerTest {
         IngredientDto request = createEggIngredientDto(0, null);
 
         mockMvc.perform(post("/api/ingredients")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
         verify(ingredientService, never()).create(any());
+    }
+
+    @Test
+    void create_whenIngredientNameAlreadyExists_returnConflict() throws Exception {
+        IngredientDto request = createEggIngredientDto(0, "Kiaušinis");
+        when(ingredientService.create(request))
+                .thenThrow(new DuplicateIngredientException(request.name()));
+
+        mockMvc.perform(post("/api/ingredients")
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(new DuplicateIngredientException(request.name()).getMessage()));
+
+        verify(ingredientService).create(request);
     }
 
     @Test
@@ -132,7 +149,7 @@ class IngredientControllerTest {
                 .thenReturn(eggIngredientDto);
 
         mockMvc.perform(put("/api/ingredients/{id}", ingredientId)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(eggIngredientDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(eggIngredientDto)));
@@ -146,7 +163,7 @@ class IngredientControllerTest {
         IngredientDto ingredientDto = createEggIngredientDto(ingredientId, null);
 
         mockMvc.perform(put("/api/ingredients/{id}", ingredientId)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(ingredientDto)))
                 .andExpect(status().isBadRequest());
 
@@ -162,7 +179,7 @@ class IngredientControllerTest {
                 .thenThrow(new IngredientNotFoundException((ingredientId)));
 
         mockMvc.perform(put("/api/ingredients/{id}", ingredientId)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(eggIngredientDto)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(new IngredientNotFoundException(ingredientId).getMessage()));
