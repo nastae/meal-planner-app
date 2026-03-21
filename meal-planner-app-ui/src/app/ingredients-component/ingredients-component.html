@@ -1,6 +1,27 @@
 <h2>Ingredients</h2>
 
-<button (click)="create()">Add Ingredient</button>
+<!-- TODO: make acceptable 0 values -->
+ <!-- TODO: add validation errors for input fields like kcal should be equal or greater than 0 -->
+<form #form="ngForm" (ngSubmit)="create()">
+    <div>
+        <input type="text" placeholder="Name" [(ngModel)]="newIngredient.name" name="name" required>
+    </div>
+    <div>
+        <input type="number" placeholder="Kcal per 100 grams" [(ngModel)]="newIngredient.kcalPer100" name="kcalPer100" required min="0">
+    </div>
+    <div>
+        <input type="number" placeholder="Protein per 100 grams" [(ngModel)]="newIngredient.proteinPer100" name="proteinPer100" required min="0">
+    </div>
+    <div>
+        <input type="number" placeholder="Fat per 100 grams" [(ngModel)]="newIngredient.fatPer100" name="fatPer100" required min="0">
+    </div>
+    <div>
+        <input type="number" placeholder="Carbs per 100 grams" [(ngModel)]="newIngredient.carbsPer100" name="carbsPer100" required min="0">
+    </div>
+
+    <button type="submit" [disabled]="form.invalid">Add Ingredient</button>
+</form>
+
 @if (errorMessage()) {
     <p style="color: red;">{{ errorMessage() }}</p>
 }

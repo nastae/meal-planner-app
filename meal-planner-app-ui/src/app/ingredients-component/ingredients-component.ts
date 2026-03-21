@@ -1,3 +1,4 @@
+import { FormsModule } from '@angular/forms';
 import { Ingredient } from '../models/ingredient';
 import { IngredientService } from './../services/ingredient-service';
 import { Component, inject, OnInit, signal } from '@angular/core';
@@ -5,7 +6,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 @Component({
   selector: 'app-ingredients-component',
   standalone: true,
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './ingredients-component.html',
   styleUrl: './ingredients-component.css',
 })
@@ -15,6 +16,15 @@ export class IngredientsComponent implements OnInit {
 
   ingredients = signal<Ingredient[]>([]);
   errorMessage = signal('');
+
+  newIngredient: Ingredient = {
+    id: 0,
+    name: '',
+    kcalPer100: null,
+    proteinPer100: null,
+    fatPer100: null,
+    carbsPer100: null
+  };
 
   ngOnInit(): void {
     console.log("ngOnInit");
@@ -28,17 +38,21 @@ export class IngredientsComponent implements OnInit {
   }
 
   create() {
-    const newIngredient: Ingredient = {
-      id: 0,
-      name: 'New Ingredient',
-      kcalPer100: 100,
-      proteinPer100: 10,
-      fatPer100: 5,
-      carbsPer100: 20
-    };
+    this.errorMessage.set('');
 
-    this.ingredientService.create(newIngredient).subscribe({
-      next: () => this.loadIngredients(),
+    this.ingredientService.create(this.newIngredient).subscribe({
+      next: () => {
+        this.loadIngredients();
+
+        this.newIngredient = {
+          id: 0, 
+          name: '',
+          kcalPer100: null,
+          proteinPer100: null,
+          fatPer100: null,
+          carbsPer100: null
+        };
+      },
       error: err => {
         if (err.status === 409) {
           // TODO: fix to display after pressing create instantly error message

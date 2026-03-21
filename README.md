@@ -92,3 +92,4 @@ psql -U postgres -d mealplanner -f src/main/resources/sql/drop_all_tables_pg.sql
 ## Future ideas
 1. Add standard formatting file and use it
 2. Write CI/CD pipelines
+3. Use bootstrap css frameworks for form, input, button, etc.
