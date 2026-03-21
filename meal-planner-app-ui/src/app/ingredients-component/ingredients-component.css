@@ -16,5 +16,12 @@ form input[type="text"] {
 form button[type="submit"] {
     align-self: flex-start;
     padding: 6px 12px;
+    /* TODO: remove cursor: pointer when disabled */
     cursor: pointer;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    margin: 4px 0;
 }

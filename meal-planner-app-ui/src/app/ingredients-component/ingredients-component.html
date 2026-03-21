@@ -1,29 +1,87 @@
 <h2>Ingredients</h2>
 
 <!-- TODO: make acceptable 0 values -->
- <!-- TODO: add validation errors for input fields like kcal should be equal or greater than 0 -->
-<form #form="ngForm" (ngSubmit)="create()">
+<!-- TODO: fix error message after submition, to not be showed -->
+ <form #form="ngForm" (ngSubmit)="create()">
     <div>
-        <input type="text" placeholder="Name" [(ngModel)]="newIngredient.name" name="name" required>
+        <input 
+            type="text" 
+            placeholder="Name" 
+            [(ngModel)]="newIngredient.name" 
+            name="name" 
+            required 
+            #name="ngModel"
+        >
+        @if (name.invalid && (name.touched || name.dirty)) {
+            <p class="error-message">Name is required</p>
+        }
     </div>
     <div>
-        <input type="number" placeholder="Kcal per 100 grams" [(ngModel)]="newIngredient.kcalPer100" name="kcalPer100" required min="0">
+        <input 
+            type="number" 
+            placeholder="Kcal per 100 grams" 
+            [(ngModel)]="newIngredient.kcalPer100" 
+            name="kcalPer100" 
+            required 
+            step="0.1"
+            min="0"
+            #kcal="ngModel"
+        >
+        @if (kcal.invalid && (kcal.touched || kcal.dirty)) {
+            <p class="error-message">Must be a positive number</p>
+        }
     </div>
     <div>
-        <input type="number" placeholder="Protein per 100 grams" [(ngModel)]="newIngredient.proteinPer100" name="proteinPer100" required min="0">
+        <input 
+            type="number" 
+            placeholder="Protein per 100 grams" 
+            [(ngModel)]="newIngredient.proteinPer100" 
+            name="proteinPer100" 
+            required 
+            step="0.1"
+            min="0"
+            #protein="ngModel"
+        >
+        @if (protein.invalid && (protein.touched || protein.dirty)) {
+            <p class="error-message">Must be a positive number</p>
+        }
     </div>
     <div>
-        <input type="number" placeholder="Fat per 100 grams" [(ngModel)]="newIngredient.fatPer100" name="fatPer100" required min="0">
+        <input 
+            type="number" 
+            placeholder="Fat per 100 grams" 
+            [(ngModel)]="newIngredient.fatPer100" 
+            name="fatPer100" 
+            required 
+            step="0.1"
+            min="0"
+            #fat="ngModel"
+        >
+        @if (fat.invalid && (fat.touched || fat.dirty)) {
+            <p class="error-message">Must be a positive number</p>
+        }
     </div>
     <div>
-        <input type="number" placeholder="Carbs per 100 grams" [(ngModel)]="newIngredient.carbsPer100" name="carbsPer100" required min="0">
+        <input 
+            type="number" 
+            placeholder="Carbs per 100 grams" 
+            [(ngModel)]="newIngredient.carbsPer100" 
+            name="carbsPer100" 
+            required 
+            step="0.1"
+            min="0"
+            #carbs="ngModel"
+        >
+        @if (carbs.invalid && (carbs.touched || carbs.dirty)) {
+            <p class="error-message">Must be a positive number</p>
+        }
     </div>
 
     <button type="submit" [disabled]="form.invalid">Add Ingredient</button>
 </form>
 
 @if (errorMessage()) {
-    <p style="color: red;">{{ errorMessage() }}</p>
+    <p class="error-message">{{ errorMessage() }}</p>
 }
 
 <ul>
