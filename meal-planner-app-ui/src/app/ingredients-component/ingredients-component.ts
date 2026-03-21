@@ -28,8 +28,6 @@ export class IngredientsComponent implements OnInit {
   }
 
   create() {
-    this.errorMessage.set('some string');
-
     const newIngredient: Ingredient = {
       id: 0,
       name: 'New Ingredient',
