@@ -79,6 +79,58 @@ Apply migrations:
 mvn flyway:migrate
 ```
 
+## How to build and run Docker image
+
+### Build your Spring Boot JAR
+Your Dockerfile expects a JAR file:
+
+```
+mvn clean package
+```
+
+You should now have:
+
+```
+target/your-app.jar
+```
+
+### Build Docker image
+From your project root (where Dockerfile is):
+
+```
+docker build -t my-spring-app .
+```
+
+### Run the container
+Basic run:
+
+```
+docker run -p 8080:8080 my-spring-app
+```
+
+Now your app is available at:
+
+```
+http://localhost:8080
+```
+
+### Run with environment variables
+Since use Neon DB and ```prod``` profile, run like this:
+
+```
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e DB_URL=jdbc:postgresql://...neon.tech:5432/dbname?sslmode=require \
+  -e DB_USER=your_user \
+  -e DB_PASSWORD=your_password \
+  my-spring-app
+```
+
+### Run in background
+```
+docker run -d -p 8080:8080 my-spring-app
+```
+
 ## Reset Database (Manual)
 If you need to drop all tables and enums in PostgreSQL (this will delete all data!).
 
