@@ -29,6 +29,16 @@ This will:
 * Run Flyway migrations
 * Start the API at http://localhost:8080
 
+## Run the application (LOCAL)
+Use this command:
+```
+mvn clean spring-boot:run -D"spring-boot.run.profiles"=local
+```
+This will:
+* Use PostgreSQL
+* Run Flyway migrations
+* Start the API at http://localhost:8080
+
 ## Run in DEV (H2)
 ```
 mvn clean spring-boot:run
@@ -42,7 +52,7 @@ Open H2 console:
 http://localhost:8080/h2-console
 ```
 
-## Run in Debug (PROD\DEV)
+## Run in Debug (PROD\LOCAL\DEV)
 1. Open Run / Debug Configurations
 2. In Program arguments, add:
    ```--spring.profiles.active=prod```
