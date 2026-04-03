@@ -9,7 +9,8 @@ import { Ingredient } from '../models/ingredient';
 export class IngredientService {
 
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/ingredients';
+  private readonly BASE_URL = "https://meal-planner-app-loen.onrender.com"; // http://localhost:8080
+  private apiUrl = this.BASE_URL + '/api/ingredients';
 
   getAll(): Observable<Ingredient[]> {
     return this.http.get<Ingredient[]>(this.apiUrl);
