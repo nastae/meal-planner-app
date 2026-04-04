@@ -5,6 +5,7 @@ import com.recipe.meal_planner.dto.IngredientDto;
 import com.recipe.meal_planner.service.IngredientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ingredients")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "${app.cors.allowed-origins}")
 public class IngredientController {
 
     private final IngredientService service;
