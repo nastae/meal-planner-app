@@ -155,3 +155,4 @@ psql -U postgres -d mealplanner -f src/main/resources/sql/drop_all_tables_pg.sql
 1. Add standard formatting file and use it
 2. Write CI/CD pipelines
 3. Use bootstrap css frameworks for form, input, button, etc.
+4. Save input data in storage that after reload on mobile phone, data wouldn't disappear, and dispappear when swtich pages 
